@@ -415,17 +415,6 @@ git push heroku main
 
 See deployment guides in docs/DEPLOYMENT.md (create as needed)
 
----
-
-## 📈 Resume Bullet Point
-
-> **Built AI-powered productivity agent** that prioritizes tasks using Eisenhower Matrix classification, generates personalized daily schedules via LLM prompts, and automates reminders through n8n workflows. Integrated OpenAI API, SQLAlchemy ORM, and developed responsive Vue-based frontend. **1.2k lines** of production-ready Python/JavaScript code with comprehensive API documentation.
-
-Or shorter:
-
-> **AI Personal Productivity Agent** - FastAPI backend with OpenAI integration, LLM-based task prioritization (Eisenhower Matrix), n8n workflow automation for email/SMS reminders, SQLite persistence, Bootstrap frontend.
-
----
 
 ## 🐛 Troubleshooting
 
@@ -491,52 +480,3 @@ Improvements welcome! Consider:
 
 ---
 
-## 📝 License
-
-Personal project. Feel free to use as portfolio piece.
-
----
-
-## ⭐ Next Steps
-
-### Week 1-2: MVP
-- ✅ Setup backend & database
-- ✅ Implement CRUD APIs
-- ✅ Integrate OpenAI
-- ✅ Basic frontend
-
-### Week 2-3: Automation
-- ✅ Setup n8n workflows
-- ✅ Email reminders
-- ✅ Weekly reports
-
-### Week 3: Polish
-- ✅ Error handling
-- ✅ Comprehensive docs
-- ✅ Deployment ready
-
-### Optional Enhancements
-- 🔄 Calendar sync
-- 🔄 Mobile app
-- 🔄 Analytics dashboard
-- 🔄 Custom themes
-
----
-
-## 🎯 Key Achievements
-
-This project demonstrates:
-1. **Full-stack development** - Backend to frontend
-2. **AI integration** - Real LLM usage, not mock
-3. **Automation skills** - n8n workflow design
-4. **Database design** - Proper schema, migrations
-5. **API design** - RESTful principles, Swagger docs
-6. **Frontend skills** - Responsive, interactive UI
-7. **DevOps basics** - Environment config, Docker-ready
-8. **Problem-solving** - Real application of AI to productivity
-
-**This is the kind of project that gets interviews. Period.**
-
----
-
-Made with ❤️ for amazing portfolio & career growth.
