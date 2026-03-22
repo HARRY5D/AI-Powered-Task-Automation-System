@@ -1,0 +1,115 @@
+{
+  "name": "Weekly Report - Monday 9 AM",
+  "description": "Generates weekly productivity report and sends via email",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 9,
+              "minute": 0,
+              "day": 1
+            }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Trigger - Monday 9 AM",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/v1/tasks/stats/summary",
+        "method": "GET",
+        "responseFormat": "json"
+      },
+      "id": "HTTP Request",
+      "name": "Get Weekly Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [550, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/v1/tasks/analyze/weekly-report",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "completed",
+              "value": "={{ $json.completed }}"
+            },
+            {
+              "name": "pending",
+              "value": "={{ $json.pending }}"
+            },
+            {
+              "name": "total",
+              "value": "={{ $json.total }}"
+            }
+          ]
+        },
+        "responseFormat": "json"
+      },
+      "id": "HTTP Request1",
+      "name": "Generate Weekly Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL@gmail.com",
+        "subject": "📊 Weekly Productivity Report - Week of {{ $now.subtract(7, 'days').toFormat('MMM dd') }}",
+        "message": "<h2 style='color: #3498db;'>Weekly Productivity Report 📊</h2><p><strong>Summary:</strong> {{ $json.summary }}</p><h3>Stats:</h3><ul><li><strong>Completion Rate:</strong> {{ $json.completion_rate.toFixed(1) }}%</li><li><strong>Tasks Completed:</strong> {{ $json.completed || 0 }}</li><li><strong>Tasks Pending:</strong> {{ $json.pending || 0 }}</li></ul><h3>Strengths:</h3><ul>{{ $json.strengths.map(s => '<li>' + s + '</li>').join('') }}</ul><h3>Areas for Improvement:</h3><ul>{{ $json.areas_for_improvement.map(a => '<li>' + a + '</li>').join('') }}</ul><h3>Recommended Actions:</h3><ul>{{ $json.recommended_actions.map(r => '<li>' + r + '</li>').join('') }}</ul>"
+      },
+      "id": "Gmail",
+      "name": "Send Weekly Report Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1150, 300],
+      "credentials": {
+        "gmailOAuth2": "gmail_credential"
+      }
+    }
+  ],
+  "connections": {
+    "Trigger - Monday 9 AM": {
+      "main": [
+        [
+          {
+            "node": "Get Weekly Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weekly Stats": {
+      "main": [
+        [
+          {
+            "node": "Generate Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Weekly Report": {
+      "main": [
+        [
+          {
+            "node": "Send Weekly Report Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

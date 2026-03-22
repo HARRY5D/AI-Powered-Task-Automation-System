@@ -1,0 +1,93 @@
+{
+  "name": "Missed Task Reminder Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": "cron",
+        "interval": ["0 */2 * * *"],
+        "timezone": "America/New_York"
+      },
+      "name": "Trigger - Every 2 Hours",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "method": "GET",
+        "url": "http://localhost:8000/api/v1/tasks?status=pending"
+      },
+      "name": "Get All Pending Tasks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const now = new Date();\nconst overdue = [];\n\nfor (let item of items) {\n  if (Array.isArray(item.json)) {\n    item.json.forEach(task => {\n      const dueDate = new Date(task.due_date);\n      if (dueDate < now && task.reminders_sent < 3) {\n        overdue.push({ json: task });\n      }\n    });\n  }\n}\n\nreturn overdue.length > 0 ? overdue : [];"
+      },
+      "name": "Filter Overdue Tasks",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "authenticationType": "predefined",
+        "method": "POST",
+        "urlObject": {
+          "base": "https://api.twilio.com/2010-04-01",
+          "path": "/Accounts/{{ $credentials.accountSid }}/Messages.json"
+        },
+        "headers": {
+          "Authorization": "Basic {{ Buffer.from($credentials.accountSid + ':' + $credentials.authToken).toString('base64') }}"
+        },
+        "bodyParameters": {
+          "From": "+1234567890",
+          "To": "+your-phone-number",
+          "Body": "⏰ Reminder: You have an overdue task: {{ $json.title }}"
+        }
+      },
+      "name": "Send SMS Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Trigger - Every 2 Hours": {
+      "main": [
+        [
+          {
+            "node": "Get All Pending Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Pending Tasks": {
+      "main": [
+        [
+          {
+            "node": "Filter Overdue Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Overdue Tasks": {
+      "main": [
+        [
+          {
+            "node": "Send SMS Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

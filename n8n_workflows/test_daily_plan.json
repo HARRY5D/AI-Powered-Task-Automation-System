@@ -1,0 +1,78 @@
+{
+  "name": "AI Daily Planner - Test (No Email)",
+  "description": "Simple workflow to test the daily plan API without Gmail setup",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Daily Trigger (8 AM)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/v1/tasks/analyze/daily-plan",
+        "method": "POST",
+        "responseFormat": "json"
+      },
+      "id": "HTTP Request",
+      "name": "Get Daily Plan from API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        550,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "filePath": "/tmp/daily_plan_{{ $now.toFormat('yyyy-MM-dd') }}.json"
+      },
+      "id": "Write File",
+      "name": "Save Plan to File",
+      "type": "n8n-nodes-base.writeFiles",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Daily Plan from API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Daily Plan from API": {
+      "main": [
+        [
+          {
+            "node": "Save Plan to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "name": "Daily Planner - 8 AM",
+  "description": "Generates AI-powered daily plan and sends via email",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Trigger - Daily 8 AM",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/v1/tasks/analyze/daily-plan",
+        "method": "POST",
+        "responseFormat": "json"
+      },
+      "id": "HTTP Request",
+      "name": "Generate Daily Plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [550, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL@gmail.com",
+        "subject": "📋 Your Daily Plan - {{ $now.toFormat('MMM dd, yyyy') }}",
+        "message": "<h2 style='color: #2c3e50;'>Good Morning! ☀️</h2><p>Here's your AI-optimized daily plan:</p><h3>Today's Tasks:</h3><ul>{{ $json.today_plan.map(task => '<li>' + task + '</li>').join('') }}</ul><h3>AI Insights:</h3><p><em>{{ $json.insights }}</em></p><p style='color: #7f8c8d; font-size: 12px;'>Start with the first task!</p>"
+      },
+      "id": "Gmail",
+      "name": "Send Daily Plan Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "credentials": {
+        "gmailOAuth2": "gmail_credential"
+      }
+    }
+  ],
+  "connections": {
+    "Trigger - Daily 8 AM": {
+      "main": [
+        [
+          {
+            "node": "Generate Daily Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Daily Plan": {
+      "main": [
+        [
+          {
+            "node": "Send Daily Plan Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

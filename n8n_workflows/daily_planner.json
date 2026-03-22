@@ -1,0 +1,86 @@
+{
+  "name": "Daily Morning Planner",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": "cron",
+        "interval": ["0 8 * * *"],
+        "timezone": "America/New_York"
+      },
+      "name": "Trigger - Every Morning 8 AM",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "method": "GET",
+        "url": "http://localhost:8000/api/v1/tasks?status=pending"
+      },
+      "name": "Get Pending Tasks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/tasks/analyze/daily-plan",
+        "body": {}
+      },
+      "name": "Generate AI Daily Plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "your-email@gmail.com",
+        "toEmail": "your-email@gmail.com",
+        "subject": "📋 Your Daily Plan - {{ $now.toFormat('yyyy-MM-dd') }}",
+        "textContent": "Good morning! 🌅\n\nHere's your optimized daily plan:\n\n{{ $node[\"Generate AI Daily Plan\"].json.today_plan.join('\\n') }}\n\nAI Insights:\n{{ $node[\"Generate AI Daily Plan\"].json.insights }}\n\nStart with the first task!"
+      },
+      "name": "Send Email with Daily Plan",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Trigger - Every Morning 8 AM": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Tasks": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Daily Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Daily Plan": {
+      "main": [
+        [
+          {
+            "node": "Send Email with Daily Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

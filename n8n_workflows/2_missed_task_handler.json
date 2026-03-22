@@ -1,0 +1,91 @@
+{
+  "name": "Missed Task Handler - Every 2 Hours",
+  "description": "Checks for overdue tasks and sends email reminders",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": "minutes",
+        "interval": 120
+      },
+      "id": "Cron",
+      "name": "Trigger - Every 2 Hours",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/v1/tasks?status=pending",
+        "method": "GET",
+        "responseFormat": "json"
+      },
+      "id": "HTTP Request",
+      "name": "Get All Pending Tasks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [550, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "expression": "={{ new Date($json.due_date) < new Date() && $json.status === 'pending' }}",
+        "options": {}
+      },
+      "id": "Function",
+      "name": "Filter Overdue Tasks",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL@gmail.com",
+        "subject": "⏰ Reminder: Task Overdue - {{ $json.title }}",
+        "message": "<h2 style='color: #e74c3c;'>Task Overdue! ⏰</h2><p><strong>Task:</strong> {{ $json.title }}</p><p><strong>Was due:</strong> {{ $json.due_date }}</p><p><strong>Description:</strong> {{ $json.description || 'No description' }}</p><p style='color: #e74c3c;'><strong>Please complete this task as soon as possible!</strong></p>"
+      },
+      "id": "Gmail",
+      "name": "Send Reminder Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1150, 300],
+      "credentials": {
+        "gmailOAuth2": "gmail_credential"
+      }
+    }
+  ],
+  "connections": {
+    "Trigger - Every 2 Hours": {
+      "main": [
+        [
+          {
+            "node": "Get All Pending Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Pending Tasks": {
+      "main": [
+        [
+          {
+            "node": "Filter Overdue Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Overdue Tasks": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
